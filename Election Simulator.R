@@ -5,9 +5,17 @@ library(tidyverse)
 #create districts
 districts <- c(state.abb,"ME-2", "NE-2")
 
-#load raw 538 data
-#FTEPolls <- data.frame(read.csv(url("https://projects.fivethirtyeight.com/polls-page/data/president_polls.csv")))
-
+#pull 538's data if it's been more than 2 hours, otherwise try to load local data, if error then pull 538 data
+if(as.numeric(now()-as.numeric(file.info("timestamp.txt")[4])) > 7200){
+  FTEPolls <- data.frame(read.csv(url("https://projects.fivethirtyeight.com/polls-page/data/president_polls.csv")))
+  write.csv(FTEPolls, "FTEPolls.csv")
+  write.table(now(),"timestamp.txt")
+} else {
+  FTEPolls <- tryCatch({data.frame(read.csv("FTEPolls.csv"))}, error = function(e) {
+    FTEPolls <- data.frame(read.csv(url("https://projects.fivethirtyeight.com/polls-page/data/president_polls.csv")))
+  })
+  write.csv(FTEPolls, "FTEPolls.csv")
+}
 #create a data frame that will pull all the 538 data where Harris is a candidate
 pollingDF <- data.frame(unique(filter(FTEPolls,answer=="Harris")$poll_id))
 colnames(pollingDF) <- "PollID"
@@ -101,3 +109,11 @@ stateData$TrumpError <- sqrt(unlist(lapply(getDataItem(stateData$State,"TrumpVar
 
 #generating a raw win probability to eyeball
 stateData$HarrisRawWin <- sprintf("%.2f%%",pnorm(stateData$Margin/(stateData$TrumpError + stateData$HarrisError))*100)
+
+#ask user if they want to write a state data file
+writeStateData <- function(write){
+  if(tolower(substr(write,1,1)) == "y"){
+  write.csv(stateData,file = paste("State_Polling_Data",format(now(),"%Y-%b-%d_%H-%M"),".csv",sep=""))
+  }
+}
+writeStateData(readline("Write state polling data file? (Y/N)"))
