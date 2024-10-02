@@ -1,7 +1,7 @@
 #Election Simulator
 library(shiny)
 library(tidyverse)
-
+setwd("~/Documents/GitHub/2024ElectionModel")
 #create districts
 districts <- c(state.name,"District of Columbia", "Maine CD-2", "Maine CD-1", "Nebraska CD-2")
 midwest <- list("Illinois","Indiana","Iowa","Kansas","Michigan","Minnesota","Missouri","Nebraska","North Dakota",
@@ -129,16 +129,17 @@ DemoData <- read.csv("StateDems.csv",colClasses=c("NULL",NA,NA,NA))
 
 #generate 4000x4 regional variables for seeding the model
 ElectionSims <- data.frame(USVar = rnorm(4000))
-ElectionSims$midwestVar <- (test$USVar - rnorm(4000))/sqrt(2)
-ElectionSims$southwestVar <- (test$USVar - rnorm(4000))/sqrt(2)
-ElectionSims$southeastVar <- (test$USVar - rnorm(4000))/sqrt(2)
+ElectionSims$midwestVar <- (2*ElectionSims$USVar - rnorm(4000))/sqrt(8)
+ElectionSims$southwestVar <- (2*ElectionSims$USVar - rnorm(4000))/sqrt(8)
+ElectionSims$southeastVar <- (2*ElectionSims$USVar - rnorm(4000))/sqrt(8)
+sigma <- 2.5
 
 #generate 2-way popular vote
 ElectionSims$HarrisPopVote <- ElectionSims$USVar * stateData$HarrisError[match("US",stateData$State)] + 
-  stateData$HarrisAvg[match("US",stateData$State)]+pnorm(test$USVar/sqrt(2.5)) *
+  stateData$HarrisAvg[match("US",stateData$State)]+pnorm(ElectionSims$USVar/sqrt(sigma)) *
   stateData$Undecided[match("US",stateData$State)]
 ElectionSims$TrumpPopVote <- -1* ElectionSims$USVar * stateData$TrumpError[match("US",stateData$State)] + 
-  stateData$TrumpAvg[match("US",stateData$State)]+(1-pnorm(test$USVar/sqrt(2.5))) *
+  stateData$TrumpAvg[match("US",stateData$State)]+(1-pnorm(ElectionSims$USVar/sqrt(sigma))) *
   stateData$Undecided[match("US",stateData$State)]
 ElectionSims$HarrisMargin <- ElectionSims$HarrisPopVote - ElectionSims$TrumpPopVote
 
@@ -152,10 +153,10 @@ calculateStateMargin <- function(state,popVoteMargin,regionVar){
   HarrisStateErr <- stateData$HarrisError[stateData$State == state]
   TrumpStateErr <- stateData$TrumpError[stateData$State == state]
   PollCount <- stateData$TimeDiscountedPollCount[stateData$State == state]
-  
+  noise <- (4*regionVar - rnorm(4000))/sqrt(16)
   impliedByPVI <- popVoteMargin + PVI
-  HarrisResult <- regionVar * HarrisStateErr + HarrisStateAvg + (pnorm(regionVar/sqrt(2.5))) * UndecidedStateAvg
-  TrumpResult <- -1 * regionVar * TrumpStateErr + TrumpStateAvg + (1-pnorm(regionVar/sqrt(2.5))) * UndecidedStateAvg
+  HarrisResult <- noise * HarrisStateErr + HarrisStateAvg + (pnorm(noise/sqrt(sigma))) * UndecidedStateAvg
+  TrumpResult <- -1 * noise * TrumpStateErr + TrumpStateAvg + (1-pnorm(noise/sqrt(sigma))) * UndecidedStateAvg
   return(((HarrisResult - TrumpResult) * PollCount + impliedByPVI)/(1+PollCount))
 }
 
@@ -168,7 +169,7 @@ for(state in districts){
   if(state %in% stateData$State){
     ElectionSims[,state] <- calculateStateMargin(state,ElectionSims$HarrisMargin,regionVar)
   }else{
-    ElectionSims[,state] <- regionVar * stateData$HarrisError[stateData$State == "US"] + (2*pnorm(test$USVar/sqrt(2.5))-1) *
+    ElectionSims[,state] <- regionVar * stateData$HarrisError[stateData$State == "US"] + (2*pnorm(ElectionSims$USVar/sqrt(sigma))-1) *
       stateData$Undecided[stateData$State == "US"] + DemoData$PVI[DemoData$District == state]
   }
 }
