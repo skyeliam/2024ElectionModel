@@ -3,7 +3,7 @@ library(shiny)
 library(tidyverse)
 
 #create districts
-districts <- c(state.abb,"ME-2", "NE-2")
+districts <- c(state.name,"District of Columbia", "Maine CD-2", "Maine CD-1", "Nebraska CD-2")
 
 #pull 538's data if it's been more than 2 hours, otherwise try to load local data, if error then pull 538 data
 if(as.numeric(now()-as.numeric(file.info("timestamp.txt")[4])) > 7200){
@@ -116,4 +116,22 @@ writeStateData <- function(write){
   write.csv(stateData,file = paste("State_Polling_Data",format(now(),"%Y-%b-%d_%H-%M"),".csv",sep=""))
   }
 }
+
+DemoData <- read.csv("StateDems.csv",colClasses=c("NULL",NA,NA,NA))
+
+#generate 4000x4 regional variables for seeding the model
+ElectionSims <- data.frame(USVar = rnorm(4000))
+ElectionSims$midwestVar <- (test$USVar - rnorm(4000))/sqrt(2)
+ElectionSims$southwestVar <- (test$USVar - rnorm(4000))/sqrt(2)
+ElectionSims$southeastVar <- (test$USVar - rnorm(4000))/sqrt(2)
+
+#generate 2-way popular vote
+ElectionSims$HarrisPopVote <- ElectionSims$USVar * stateData$HarrisError[match("US",stateData$State)] + 
+  stateData$HarrisAvg[match("US",stateData$State)]+pnorm(test$USVar/sqrt(2.5)) *
+  stateData$Undecided[match("US",stateData$State)]
+ElectionSims$TrumpPopVote <- -1* ElectionSims$USVar * stateData$TrumpError[match("US",stateData$State)] + 
+  stateData$TrumpAvg[match("US",stateData$State)]+(1-pnorm(test$USVar/sqrt(2.5))) *
+  stateData$Undecided[match("US",stateData$State)]
+ElectionSims$HarrisMargin <- ElectionSims$HarrisPopVote - ElectionSims$TrumpPopVote
+
 writeStateData(readline("Write state polling data file? (Y/N)"))
