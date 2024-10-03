@@ -61,8 +61,10 @@ for (id in pollingDF$PollID){
   pollingDF$SampleSize[match(id,pollingDF$PollID)] <- min(pollResults$sample_size)
 }
 
-#throw out polls without a reported sample size
+#throw out polls without a reported sample size and dupe(ish) polls
 pollingDF <- filter(pollingDF,!is.na(SampleSize))
+pollingDF <- pollingDF[-which(mutate(pollingDF,
+                                     cond = ifelse(PollName == lead(PollName) & District == lead(District),TRUE,FALSE) )$cond),]
 
 #replace blanks with U.S.
 pollingDF$District[pollingDF$District==""]<-"US"
