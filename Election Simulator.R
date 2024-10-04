@@ -1,6 +1,7 @@
 #Election Simulator
 library(shiny)
 library(tidyverse)
+library(DescTools)
 setwd("~/Documents/GitHub/2024ElectionModel")
 #create districts
 districts <- c(state.name,"District of Columbia", "Maine CD-2", "Maine CD-1", "Nebraska CD-2")
@@ -35,6 +36,8 @@ pollingDF$Trump <- vector(mode = "numeric",length = length(pollingDF$PollID))
 
 #sample only polls since harris dropped
 pollingDF <- filter(pollingDF,pollingDF$StartDate > as.Date("7/25/24","%m/%d/%y"))
+pollingDF$Harris <- Winsorize(pollingDF$Harris)
+pollingDF$Trump <- Winsorize(pollingDF$Trump)
 
 #pull in data, preferring likely voter responses to registered and registered to adults
 for (id in pollingDF$PollID){

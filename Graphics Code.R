@@ -13,10 +13,11 @@ hist(ElectionSims$ElectoralVotes, col = colorbreaks, breaks = breaktest,freq=TRU
 }
 histGenerator()
 
-ElectionSims %>% mutate(quadrant = case_when(ElectionSims$HarrisMargin>0 & ElectionSims$ElectoralVotes > 270 ~"Harris wins PV and EC",
-                                             ElectionSims$HarrisMargin<0 & ElectionSims$ElectoralVotes > 270 ~"Harris loses PV and wins EC",
-                                             ElectionSims$HarrisMargin>0 & ElectionSims$ElectoralVotes < 270 ~"Trump loses PV and wins EC",
-                                             ElectionSims$HarrisMargin<0 & ElectionSims$ElectoralVotes < 270 ~"Trump wins PV and wins EC",
+dotplotGenerator <- function(){
+ElectionSims %>% mutate(quadrant = case_when(ElectionSims$HarrisMargin>0 & ElectionSims$ElectoralVotes >= 270 ~"Harris wins PV and EC",
+                                             ElectionSims$HarrisMargin<0 & ElectionSims$ElectoralVotes >= 270 ~"Harris loses PV and wins EC",
+                                             ElectionSims$HarrisMargin>0 & ElectionSims$ElectoralVotes < 269 ~"Trump loses PV and wins EC",
+                                             ElectionSims$HarrisMargin<0 & ElectionSims$ElectoralVotes < 269 ~"Trump wins PV and wins EC",
                                              TRUE ~ "Electoral College tie")) %>%
   ggplot(aes(x=ElectionSims$HarrisMargin,y=ElectionSims$ElectoralVotes-270,color = quadrant)) + geom_jitter() + 
   scale_color_manual(values = c(`Harris wins PV and EC` = 'dodgerblue4', `Harris loses PV and wins EC` = 'dodgerblue', 
@@ -24,4 +25,5 @@ ElectionSims %>% mutate(quadrant = case_when(ElectionSims$HarrisMargin>0 & Elect
                                 `Trump wins PV and wins EC` = 'firebrick',`Electoral College tie` = "darkgrey")) +
   ggtitle("Popular vote margin vs. Electoral College margin") + xlab("Harris popular vote margin (%)") +
   ylab("Harris Electoral College vote margin")
-  
+}
+dotplotGenerator()
