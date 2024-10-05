@@ -127,6 +127,8 @@ writeStateData <- function(write){
   if(tolower(substr(write,1,1)) == "y"){
   write.csv(stateData,file = paste("State_Polling_Data",format(now(),"%Y-%b-%d_%H-%M"),".csv",sep=""))
   write.csv(ElectionSims,file = paste("Election Simulation Data",format(now(),"%Y-%b-%d_%H-%M"),".csv",sep=""))
+  write.csv(stateData,file = paste("Latest_State_Polling_Data",".csv",sep=""))
+  write.csv(ElectionSims,file = paste("Latest_Election Simulation Data",".csv",sep=""))
   }
 }
 
