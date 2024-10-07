@@ -1,4 +1,5 @@
 latestSimData <- read.csv(url("https://raw.githubusercontent.com/skyeliam/2024ElectionModel/refs/heads/main/Latest_Election%20Simulation%20Data.csv"))
+colnames(latestSimData) <- str_replace_all(colnames(latestSimData),"\\."," ")
 
 histGenerator <- function(){
 breaktest <- c(105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,
@@ -30,10 +31,9 @@ latestSimData %>% mutate(quadrant = case_when(latestSimData$HarrisMargin>0 & lat
 }
 dotplotGenerator()
 
+#function for generating the range of states as a forestplot
 stateRangeGenerator <- function(){
-  districts <- c(state.name,"District of Columbia","Maine CD-1","Maine CD-2","Nebraska CD-2")
-  districts <- str_replace_all(districts," ",".")
-  districts <- str_replace_all(districts,"-",".")
+  districts <- c(state.name,"District of Columbia","Maine CD 1","Maine CD 2","Nebraska CD 2")
   mean  <- unlist(lapply(latestSimData[,districts],mean))
   lower <- unlist(lapply(latestSimData[,districts],quantile,probs=1/20))
   upper <- unlist(lapply(latestSimData[,districts],quantile,probs=19/20))
@@ -42,20 +42,14 @@ stateRangeGenerator <- function(){
   
   df <- data.frame(districts, mean, lower, upper,zeropoint)
   
-  # reverses the factor level ordering for labels after coord_flip()
+  #flip the axes
   df$districts <- factor(df$districts, levels=rev(df$districts))
   
-  library(ggplot2)
-  fp <- ggplot(data=df, aes(x=districts, y=mean, ymin=lower, ymax=upper)) +
-    geom_pointrange() + 
-    geom_hline(yintercept=0, lty=2) +  
-    coord_flip() +
-    xlab("State") + ylab("Mean (95% CI)") +
-    theme_bw()  # use a white background
-  
-  #trying a multicolor range
-  ggplot(data=df) + geom_segment(aes(x=lower,xend=zeropoint,y=districts,yend=districts),colour="firebrick1") + 
+  dotcolors <- ifelse(mean>0,"dodgerblue4","firebrick")
+    #generate the forest plot
+    ggplot(data=df) + geom_segment(aes(x=lower,xend=zeropoint,y=districts,yend=districts),colour="firebrick1") + 
     geom_segment(aes(x=zeropoint,xend=upper,y=districts,yend=districts),colour="dodgerblue1") + 
     geom_segment(aes(x=lower,xend=upper,y=districts,yend=districts),colour=lineColor) +
-    geom_point(x = mean, y = districts) + xlab("Forecasted Margin (%)") + ylab("State/District") + theme_bw()
-  }
+    geom_point(aes(x = mean, y = districts),color=dotcolors) + xlab("Forecasted Margin (%)") + ylab("State/District") + theme_bw()
+}
+stateRangeGenerator()
