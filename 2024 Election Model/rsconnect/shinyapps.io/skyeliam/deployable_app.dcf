@@ -1,0 +1,10 @@
+name: deployable_app
+title:
+username: skyeliam
+account: skyeliam
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 12945261
+bundleId: 9193637
+url: https://skyeliam.shinyapps.io/deployable_app/
+version: 1
