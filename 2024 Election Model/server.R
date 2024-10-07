@@ -1,8 +1,8 @@
 #pull the latest simulation data
 latestSimData <- read.csv(url("https://raw.githubusercontent.com/skyeliam/2024ElectionModel/refs/heads/main/Latest_Election%20Simulation%20Data.csv"))
 colnames(latestSimData) <- str_replace_all(colnames(latestSimData),"\\."," ")
-
-
+timeStamp <- StrExtractBetween(read_file(url(
+  "https://raw.githubusercontent.com/skyeliam/2024ElectionModel/refs/heads/main/timestamp.txt"))," ","\n")
 
 #function for generating histogram of all EV outcomes
 histGenerator <- function(){
@@ -14,9 +14,7 @@ histGenerator <- function(){
   colorbreaks[gram$breaks > 268] <- "grey"
   colorbreaks[gram$breaks > 269] <- "dodgerblue"
   hist(latestSimData$ElectoralVotes, col = colorbreaks, breaks = breaktest,freq=TRUE,
-       xlab = "Harris Electoral Votes",
-       main = paste("Harris wins",
-                    sprintf("%.1f%%",sum(latestSimData$ElectoralVotes>=270)/40),"of simulations"))
+       xlab = "Harris Electoral Votes",main = NULL)
 }
 
 #function for generating a dot plot of EV outcomes vs popular vote
@@ -30,7 +28,7 @@ dotplotGenerator <- function(){
     scale_color_manual(values = c(`Harris wins PV and EC` = 'dodgerblue4', `Harris loses PV and wins EC` = 'dodgerblue', 
                                   `Trump loses PV and wins EC` = 'firebrick1', 
                                   `Trump wins PV and wins EC` = 'firebrick',`Electoral College tie` = "darkgrey")) +
-    ggtitle("Popular vote margin vs. Electoral College margin") + xlab("Harris popular vote margin (%)") +
+    xlab("Harris popular vote margin (%)") +
     ylab("Harris Electoral College vote margin")
 }
 
@@ -98,7 +96,9 @@ singleStateLine <- function(state){
 
 server <- function(input, output, session) {
   output$header <- renderText({
-    paste0("<h1>Welcome to Liam's 2024 Presidential Election Nowcast</h1>")
+    paste0("<h1>Welcome to Liam's 2024 Presidential Election Nowcast</h1><p1>Data last updated on ",
+           paste(format(as.Date(timeStamp),format="%B %d, %Y"),"at",StrExtractBetween(timeStamp," ","\\.")),
+           "</p>")
   })
   state <- reactive({
     latestSimData[,input$statePick]
@@ -122,7 +122,8 @@ server <- function(input, output, session) {
     outputString
   })
   output$footer <- renderText({
-    paste0("<footer>Polling data from 538. State partisan index data from Cook Political Report.
-           Built in R using Shiny. Deployed via shinyapps.io</footer>")
+    paste0("<footer>Built by Liam C. Stewart, www.liamstewart.com <br>
+    Polling data from 538. State partisan index data from Cook Political Report.<br>
+           Built in R using Shiny. Deployed via shinyapps.io.</footer>")
   })
 }
