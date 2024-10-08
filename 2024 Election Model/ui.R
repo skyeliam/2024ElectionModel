@@ -1,6 +1,9 @@
 #a shiny app for displaying the results of the election simulation
 library(shiny)
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(readr)
 library(shinydashboard)
 library(DescTools)
 

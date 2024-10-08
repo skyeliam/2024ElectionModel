@@ -1,3 +1,10 @@
+library(shiny)
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(readr)
+library(shinydashboard)
+library(DescTools)
 #pull the latest simulation data
 latestSimData <- read.csv(url("https://raw.githubusercontent.com/skyeliam/2024ElectionModel/refs/heads/main/Latest_Election%20Simulation%20Data.csv"))
 colnames(latestSimData) <- str_replace_all(colnames(latestSimData),"\\."," ")
@@ -124,6 +131,6 @@ server <- function(input, output, session) {
   output$footer <- renderText({
     paste0("<footer>Built by Liam C. Stewart, www.liamstewart.com <br>
     Polling data from 538. State partisan index data from Cook Political Report.<br>
-           Built in R using Shiny. Deployed via shinyapps.io.</footer>")
+           Built in R using Shiny.</footer>")
   })
 }

@@ -183,4 +183,31 @@ for(state in districts){
 
 ElectionSims$ElectoralVotes <- rowSums(sweep((ElectionSims[,districts]>0),MARGIN = 2,unlist(data.table::transpose(list(DemoData$EVs[DemoData$District == districts]))),`*`))
 
+#code to find the tipping point state
+findTippingPoint <- function(){
+  tippingPoint <- c()
+  for(sim in rownames(ElectionSims)){
+    winner <- ElectionSims[sim,"ElectoralVotes"] >269
+    findTipping <- data.frame(sort(unlist(transpose(ElectionSims[sim,districts])),decreasing = winner))
+    votes <- 0
+    for(state in rownames(findTipping)){
+      if (winner){
+        votes <- votes + as.numeric(findTipping[state,]>0)*DemoData$EVs[DemoData$District==state]
+      } else{
+        votes <- votes + as.numeric(findTipping[state,]<0)*DemoData$EVs[DemoData$District==state]
+      }
+      if(votes > 269){
+        tippingPoint <- c(tippingPoint,state)
+        break
+      }
+    }
+    if(votes == 269){
+      tippingPoint <- c(tippingPoint,NA)
+    }
+  }
+  tippingPoint
+}
+
+ElectionSims$TippingPointState <- findTippingPoint()
+
 writeStateData(readline("Write data files? (Y/N)"))
