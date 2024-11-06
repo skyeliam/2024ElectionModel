@@ -79,14 +79,14 @@ pollingDF$margin <- pollingDF$Harris - pollingDF$Trump
 #calculate a time discount
 pollingDF$TimeDiscount <- 1/(1+as.numeric(floor((today()-pollingDF$EndDate)/7)))
 
-for(poll in pollingDF$PollID){
-  subSample <- filter(pollingDF,PollName == pollingDF[pollingDF$PollID==poll,]$PollName&
-                        District == pollingDF[pollingDF$PollID==poll,]$District&
-                        abs(EndDate-pollingDF[pollingDF$PollID==poll,]$EndDate)<=7&
-                        PollType==pollingDF[pollingDF$PollID==poll,]$PollType)
-  subLen <- length(subSample[,1])
-  pollingDF$SampleSize[pollingDF$PollID == poll] <- pollingDF$SampleSize[pollingDF$PollID == poll]/subLen
-}
+#for(poll in pollingDF$PollID){
+#  subSample <- filter(pollingDF,PollName == pollingDF[pollingDF$PollID==poll,]$PollName&
+#                        District == pollingDF[pollingDF$PollID==poll,]$District&
+#                        abs(EndDate-pollingDF[pollingDF$PollID==poll,]$EndDate)<=7&
+#                        PollType==pollingDF[pollingDF$PollID==poll,]$PollType)
+#  subLen <- length(subSample[,1])
+#  pollingDF$SampleSize[pollingDF$PollID == poll] <- pollingDF$SampleSize[pollingDF$PollID == poll]/subLen
+#}
 
 #creating a dataframe that aggregates the polling data for each state / relevant CDs / US
 stateData <- data.frame(unique(pollingDF$District))
